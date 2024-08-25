@@ -10,7 +10,7 @@ public class MazeElement : MonoBehaviour
     [SerializeField] GameObject moneyTextEffect;
     public enum TriangleOrientation { BottomLeft, BottomRight, TopLeft, TopRight }
     public TriangleOrientation triangleOrientation;
-
+    
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.collider.CompareTag("Ball"))

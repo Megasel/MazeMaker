@@ -15,6 +15,9 @@ public class BottomButtons : MonoBehaviour
     [SerializeField] public float price;
     [SerializeField] public TMP_Text priceText;
     [SerializeField] SpriteRenderer spriteRenderer;
+    [SerializeField] private GameObject rewardButton;
+    [SerializeField] private BoxCollider2D buttCol;
+    [SerializeField] private BoxCollider2D rewCol;
 
     public enum ButtonType
     {
@@ -39,12 +42,18 @@ public class BottomButtons : MonoBehaviour
             Color color = spriteRenderer.color;
             color.a = 1;
             spriteRenderer.color = color;
+            rewardButton.SetActive(false);
+            buttCol.enabled = true;
+            rewCol.enabled = false;
         }
         else
         {
             Color color = spriteRenderer.color;
             color.a = 0.5f;
             spriteRenderer.color = color;
+            rewardButton.SetActive(true);
+            buttCol.enabled = false;
+            rewCol.enabled = true;
         }
     }
 
