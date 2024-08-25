@@ -4,12 +4,9 @@ using UnityEngine;
 
 public class Petal : MonoBehaviour
 {
-    //BoxCollider2D boxCollider;
+    [SerializeField]BoxCollider2D boxCollider;
     //[SerializeField] List<GameObject> dollarObj = new List<GameObject>();
-    //private void Start()
-    //{
-    //    boxCollider = GetComponent<BoxCollider2D>();
-    //}
+
     //private void OnTriggerEnter2D(Collider2D collision)
     //{
     //    if (collision.CompareTag("MazeElement"))
@@ -31,7 +28,29 @@ public class Petal : MonoBehaviour
     //            obj.SetActive(true);
     //        }
     //        boxCollider.enabled = true;
-            
+
     //    }
     //}
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.name == "gipotenuza" )
+        {
+            boxCollider.enabled = false;
+
+        }
+
+    }
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        
+        
+    }
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.name == "gipotenuza" )
+        {
+            print(collision.gameObject.name);
+            //boxCollider.enabled = true;
+        }
+    }
 }

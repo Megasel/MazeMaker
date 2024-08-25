@@ -74,47 +74,61 @@ public class BallController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if(other.tag != "Ball")
+        if (other.tag != "Rewarded")
         {
-
-            if (other != null && other != lastHitCollider)
+            if (other.tag != "Ball")
             {
-                if (other.transform.parent.TryGetComponent<MazeElement>(out MazeElement mazeElement))
+               
+                if (other != null && other != lastHitCollider)
                 {
-                    if (other.CompareTag("Gipotenuza"))
+                    if (other.transform.parent.TryGetComponent<MazeElement>(out MazeElement mazeElement))
                     {
+                        if (other.CompareTag("Gipotenuza"))
+                        {
+                            print("ball");
 
-                        if (mazeElement.gameObject.tag != "Respawn")
+                            if (mazeElement.gameObject.tag != "Respawn")
+                            {
+
+                                mazeElement.Reflect(direction, this, true);
+                            }
+
+                            mazeElement.AddMoney(false, mazeElement.transform);
+                        }
+                        else if (other.CompareTag("Katet"))
+                        {
+                            mazeElement.Reflect(direction, this, false);
+                        }
+                        else if (other.CompareTag("Petal"))
                         {
 
-                            mazeElement.Reflect(direction, this, true);
+                            mazeElement.AddMoney(true, mazeElement.transform);
+                            mazeElement.gameObject.transform.DOPunchScale(new Vector3(0.05f, 0.05f, 0), 0.3f);
                         }
+                    }
 
-                        mazeElement.AddMoney(false, mazeElement.transform);
-                    }
-                    else if (other.CompareTag("Katet"))
-                    {
-                        mazeElement.Reflect(direction, this, false);
-                    }
-                    else if (other.CompareTag("Petal"))
-                    {
-
-                        mazeElement.AddMoney(true, mazeElement.transform);
-                        mazeElement.gameObject.transform.DOPunchScale(new Vector3(0.05f, 0.05f, 0), 0.3f);
-                    }
+                    GameManager.instance.SaveGame();
                 }
+            }
+            else if (other.tag == "Ball" && other.transform.parent == null || !other.transform.parent.CompareTag("MazeElement"))
+            {
+                print("1");
+                direction *= -1;
+                ParticleSystem part = Instantiate(particleSystem, transform.position, Quaternion.identity);
 
-                GameManager.instance.SaveGame();
+                part.transform.position = transform.position;
+                part.Play();
+                Destroy(part.gameObject, 2);
+            }
+            else
+            {
+                direction *= -1;
+
             }
         }
-        else
-        {
-            print("p");
-            direction *= -1;
-            
-        }
-    }
         
+    }
+    [SerializeField] ParticleSystem particleSystem;
 }
 
 

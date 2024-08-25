@@ -41,8 +41,8 @@ public class MazeElement : MonoBehaviour
     }
     public void AddMoney(bool isPetal, Transform pos)
     {
-        float addedCoins = multiplier * GameManager.instance.globalMultiplier;
-        
+        float addedCoins = GameManager.instance.globalMultiplier * Mathf.Pow(2.4f, level - 1);
+
 
         MazeElement mazeElement = GetComponent<MazeElement>();
         Vector3 localPosition = new Vector3(0, 0, 0); // Ќапример, это локальна€ позици€ внутри MazeElement
@@ -54,7 +54,7 @@ public class MazeElement : MonoBehaviour
 
         GameObject text = Instantiate(moneyTextEffect, Vector3.zero, Quaternion.identity, textContainer.transform);
         TMP_Text textComponent = text.GetComponent<TMP_Text>();
-        textComponent.text = addedCoins.ToString();
+        textComponent.text = GameManager.instance.FormatNumber(addedCoins);
         textComponent.rectTransform.anchoredPosition = new Vector2(0, textComponent.rectTransform.position.y);
         Destroy(textContainer, 1.5f);
 

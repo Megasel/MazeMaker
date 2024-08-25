@@ -99,7 +99,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcd5e2faf47b3ff44bb479e9aecf0574, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 5
+  speed: 3
   direction: {x: 0, y: -1}
   inTube: 1
   rayLength: 0.14
@@ -109,6 +109,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 56770c19c69018d4eb78505e54a479db, type: 3}
   - {fileID: 21300000, guid: d6b1d52ecdc7f8f4091d53c045c8cde6, type: 3}
   - {fileID: 21300000, guid: 53c8b9ab4f2d3934ba8961d972e64acf, type: 3}
+  particleSystem: {fileID: 5976799327186537315, guid: 09450f9c60ce5ab44a27eef71885ad9a, type: 3}
 --- !u!58 &1371251995763834807
 CircleCollider2D:
   m_ObjectHideFlags: 0

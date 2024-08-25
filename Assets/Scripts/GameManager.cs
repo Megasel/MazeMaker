@@ -52,7 +52,7 @@ public class GameManager : MonoBehaviour
     public int actions = 0;
     int ballsCount = 0;
     int bgIndex = 0;
-
+    [SerializeField] ParticleSystem particleSystem;
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -154,7 +154,21 @@ public class GameManager : MonoBehaviour
 
        
     }
-
+    public string FormatNumber(float number)
+    {
+        if (number >= 1000000)
+        {
+            return (number / 1000000f).ToString("0.00") + "M";
+        }
+        else if (number >= 1000)
+        {
+            return (number / 1000f).ToString("0.00") + "K";
+        }
+        else
+        {
+            return number.ToString("0.00");
+        }
+    }
     public void LoadGame()
     {
         shapesPrice = PlayerPrefs.GetFloat("shapesPrice", 1);
@@ -235,21 +249,23 @@ public class GameManager : MonoBehaviour
 
             newElement.GetComponent<DragAndDrop>().SnapToCell(currentCellA);
             newElement.transform.DOPunchScale(new Vector3(0.05f, 0.05f, 0), 0.3f);
+            particleSystem.transform.position = elementB.transform.position;
+            particleSystem.Play();
             Destroy(elementA);
         }
     }
 
     public void UpdateUi()
     {
-        moneyText.text = "$" + formatMoneyText();
-        shapesPriceText.text = "$" + shapesPrice.ToString("0.0");
-        ballsPriceText.text = "$" + ballsPrice.ToString("0.0");
-        incomePriceText.text = "$" + incomePrice.ToString("0.0");
+        moneyText.text = "$" + FormatNumber(coins);
+        shapesPriceText.text = "$" + FormatNumber(shapesPrice);
+        ballsPriceText.text = "$" + FormatNumber(ballsPrice);
+        incomePriceText.text = "$" + FormatNumber(incomePrice);
     }
 
     string formatMoneyText()
     {
-        string formattedNumber = coins.ToString("0.0");
+        string formattedNumber = coins.ToString("0.00");
         int dotIndex = formattedNumber.IndexOf('.');
         if (dotIndex >= 0 && formattedNumber.Length > dotIndex + 3)
         {

@@ -1,3 +1,5 @@
+using InstantGamesBridge;
+using InstantGamesBridge.Modules.Advertisement;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -8,11 +10,10 @@ public class BottomButtons : MonoBehaviour
     [SerializeField] public ButtonType buttonType;
     [SerializeField] private Transform pos;
     [SerializeField] private GameObject ball;
-    [SerializeField] private GameObject shape;
+    [SerializeField] private List<GameObject> shape = new List<GameObject>();
     [SerializeField] private List<Cell> cellPositions = new List<Cell>();
     [SerializeField] public float price;
     [SerializeField] public TMP_Text priceText;
-
     [SerializeField] SpriteRenderer spriteRenderer;
 
     public enum ButtonType
@@ -22,15 +23,18 @@ public class BottomButtons : MonoBehaviour
         Income
     }
 
+    private static BottomButtons currentInstance;
+
     private void Start()
     {
         LoadPrice();
-
+        Bridge.advertisement.rewardedStateChanged += OnRewardedStateChanged;
         UpdateUi();
     }
+
     private void Update()
     {
-        if(GameManager.instance.coins >= price)
+        if (GameManager.instance.coins >= price)
         {
             Color color = spriteRenderer.color;
             color.a = 1;
@@ -43,33 +47,48 @@ public class BottomButtons : MonoBehaviour
             spriteRenderer.color = color;
         }
     }
+
     private void OnMouseDown()
     {
         GameManager.instance.actions++;
         if (GameManager.instance.coins >= price)
         {
-            switch (buttonType)
-            {
-                case ButtonType.AddShape:
-                    AddShape();
-                    break;
-                case ButtonType.AddBall:
-                    AddBall();
-                    break;
-                case ButtonType.Income:
-                    Income();
-                    break;
-            }
+            ExecuteAction(false);
         }
         else
         {
+            currentInstance = this; // Сохраняем ссылку на текущий объект
+            Bridge.advertisement.ShowRewarded();
         }
-        GameManager.instance.ShowInterstitial();
+    }
+
+    private void ExecuteAction(bool isRewarded)
+    {
+        switch (buttonType)
+        {
+            case ButtonType.AddShape:
+                AddShape(isRewarded,0);
+                break;
+            case ButtonType.AddBall:
+                AddBall(isRewarded);
+                break;
+            case ButtonType.Income:
+                Income(isRewarded);
+                break;
+        }
+    }
+
+    private void OnRewardedStateChanged(RewardedState state)
+    {
+        if (state == RewardedState.Rewarded && currentInstance == this)
+        {
+            ExecuteAction(true);
+        }
     }
 
     public void UpdateUi()
     {
-        priceText.text = "$" + FormatNumber(price);
+        priceText.text = "$" + GameManager.instance.FormatNumber(price);
     }
 
     private void LoadPrice()
@@ -88,50 +107,34 @@ public class BottomButtons : MonoBehaviour
         }
     }
 
-    void AddShape()
+    public void AddShape(bool isRewarded,int id)
     {
         foreach (Cell element in cellPositions)
         {
             if (element.isEmpty)
             {
-                GameObject newShape = Instantiate(shape, element.transform.position, Quaternion.identity, element.transform);
+                GameObject newShape = Instantiate(shape[id], element.transform.position, Quaternion.identity, element.transform);
                 newShape.GetComponent<DragAndDrop>().SnapToCell(element);
-                GameManager.instance.CalculatePrice(this);
+                if (!isRewarded)
+                    GameManager.instance.CalculatePrice(this);
                 break;
             }
         }
     }
 
-    void AddBall()
+    void AddBall(bool isRewarded)
     {
         Instantiate(ball, pos.position, Quaternion.identity);
-        GameManager.instance.CalculatePrice(this);
+        if (!isRewarded)
+            GameManager.instance.CalculatePrice(this);
     }
 
-    void Income()
+    void Income(bool isRewarded)
     {
         GameManager.instance.globalMultiplier += 0.01f;
-        GameManager.instance.CalculatePrice(this);
+        if (!isRewarded)
+            GameManager.instance.CalculatePrice(this);
     }
 
-    private string FormatNumber(float number)
-    {
-        if (number >= 1000000)
-        {
-            return (number / 1000000f).ToString("0.0") + "M";
-           
-        }
-            
-        else if (number >= 1000)
-        {
-            return (number / 1000f).ToString("0.0") + "K";
-        }
-            
-        else
-        {
-            
-            return number.ToString("0.0");
-        }
-            
-    }
+    
 }
