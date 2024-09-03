@@ -5,8 +5,9 @@ using UnityEngine;
 public class CheckBall : MonoBehaviour
 {
     [SerializeField] GameObject ballTubeCollider;
-    public void OnRayHit()
+    public void OnTriggerEnter2D(Collider2D col)
     {
-        ballTubeCollider.SetActive(true); 
+        if(col.CompareTag("Ball"))
+            ballTubeCollider.SetActive(true); 
     }
 }

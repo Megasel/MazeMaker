@@ -1,9 +1,10 @@
 using DG.Tweening;
+using InstantGamesBridge;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using InstantGamesBridge;
+using UnityEngine.PlayerLoop;
 [System.Serializable]
 public class GameState
 {
@@ -19,7 +20,7 @@ public class ElementData
     public int level;
     public Vector2 position;
     public MazeElement.TriangleOrientation? orientation;
-    public int cellIndex; 
+    public int cellIndex;
 }
 
 [System.Serializable]
@@ -52,7 +53,9 @@ public class GameManager : MonoBehaviour
     public int actions = 0;
     int ballsCount = 0;
     int bgIndex = 0;
-    [SerializeField] ParticleSystem particleSystem;
+    [SerializeField] ParticleSystem particleEffect;
+    public int isTutorialCompleted;
+    public Tutorial tutorial;
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -63,28 +66,33 @@ public class GameManager : MonoBehaviour
 
         instance = this;
         DontDestroyOnLoad(gameObject);
-
-        LoadGame();
+        tutorial = GetComponent<Tutorial>();
+        
     }
     public void ShowInterstitial()
     {
         Bridge.advertisement.ShowInterstitial();
     }
+   
     private void Start()
     {
+        LoadGame();
+        Debug.Log(PlayerPrefs.GetFloat("coins"));
+        tutorial = FindAnyObjectByType<Tutorial>();
         UpdateUi();
         StartCoroutine(GenerateBalls());
     }
     IEnumerator GenerateBalls()
     {
         yield return new WaitForSeconds(1);
-        Instantiate(ballPrefab,new Vector3(0.041f, 5.96f,0),Quaternion.identity);
+        Instantiate(ballPrefab, new Vector3(0.041f, 5.96f, 0), Quaternion.identity);
         ballsCount++;
-        if (ballsCount < PlayerPrefs.GetInt("ballsLevel")) 
+        if (ballsCount < PlayerPrefs.GetInt("ballsLevel"))
         {
             StartCoroutine(GenerateBalls());
         }
     }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Delete))
@@ -92,13 +100,17 @@ public class GameManager : MonoBehaviour
             PlayerPrefs.DeleteAll();
             Debug.Log("All data deleted.");
         }
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            PlayerPrefs.GetFloat("coins");
+        }
         if (actions == 100)
         {
             bgIndex++;
             if (bgIndex > bgSprites.Count)
                 bgIndex = 0;
             PlayerPrefs.SetInt("bgIndex", bgIndex);
-            
+
             bg.sprite = bgSprites[bgIndex];
             actions = 0;
         }
@@ -111,20 +123,20 @@ public class GameManager : MonoBehaviour
 
         foreach (MazeElement element in FindObjectsOfType<MazeElement>())
         {
-           
-                Cell cell = element.GetComponentInParent<Cell>();
-                int cellIndex = System.Array.IndexOf(cells, cell);
 
-                ElementData elementData = new ElementData
-                {
-                    type = element.type.ToString(),
-                    level = element.level,
-                    position = element.transform.position,
-                    orientation = element.type == MazeElement.ElementType.Triangle ? element.triangleOrientation : (MazeElement.TriangleOrientation?)null,
-                    cellIndex = cellIndex
-                };
-                gameState.elements.Add(elementData);
-            
+            Cell cell = element.GetComponentInParent<Cell>();
+            int cellIndex = System.Array.IndexOf(cells, cell);
+
+            ElementData elementData = new ElementData
+            {
+                type = element.type.ToString(),
+                level = element.level,
+                position = element.transform.position,
+                orientation = element.type == MazeElement.ElementType.Triangle ? element.triangleOrientation : (MazeElement.TriangleOrientation?)null,
+                cellIndex = cellIndex
+            };
+            gameState.elements.Add(elementData);
+
         }
 
         foreach (Cell cell in cells)
@@ -148,21 +160,21 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetFloat("coins", coins);
         PlayerPrefs.SetFloat("globalMultiplier", globalMultiplier);
         PlayerPrefs.SetInt("bgIndex", bgIndex);
-       PlayerPrefs.Save();
+        PlayerPrefs.Save();
 
-        
 
-       
+
+
     }
     public string FormatNumber(float number)
     {
         if (number >= 1000000)
         {
-            return (number / 1000000f).ToString("0.00") + "M";
+            return (number / 1000000f).ToString("0.0") + "M";
         }
         else if (number >= 1000)
         {
-            return (number / 1000f).ToString("0.00") + "K";
+            return (number / 1000f).ToString("0.0") + "K";
         }
         else
         {
@@ -174,12 +186,13 @@ public class GameManager : MonoBehaviour
         shapesPrice = PlayerPrefs.GetFloat("shapesPrice", 1);
         ballsPrice = PlayerPrefs.GetFloat("ballsPrice", 10000);
         incomePrice = PlayerPrefs.GetFloat("incomePrice", 100);
-        coins = PlayerPrefs.GetFloat("coins", 10);
+        coins = PlayerPrefs.GetFloat("coins", 30);
         globalMultiplier = PlayerPrefs.GetFloat("globalMultiplier", 1);
         shapesLevel = PlayerPrefs.GetInt("shapesLevel", 1);
         ballsLevel = PlayerPrefs.GetInt("ballsLevel", 1);
         incomelevel = PlayerPrefs.GetInt("incomelevel", 1);
         bgIndex = PlayerPrefs.GetInt("bgIndex", 0);
+        isTutorialCompleted = PlayerPrefs.GetInt("tutorialCompleted", 0);
         UpdateUi();
 
         if (PlayerPrefs.HasKey("GameState"))
@@ -216,12 +229,12 @@ public class GameManager : MonoBehaviour
                 {
                     Debug.LogWarning($"Invalid cell index {elementData.cellIndex} for element at position {elementData.position}. Skipping this element.");
                 }
-                    
+
             }
 
-           
 
-        
+
+
         }
     }
 
@@ -248,9 +261,15 @@ public class GameManager : MonoBehaviour
             newElement.GetComponent<MazeElement>().level = nextLevel;
 
             newElement.GetComponent<DragAndDrop>().SnapToCell(currentCellA);
-            newElement.transform.DOPunchScale(new Vector3(0.05f, 0.05f, 0), 0.3f);
-            particleSystem.transform.position = elementB.transform.position;
-            particleSystem.Play();
+            if(tutorial.currentStep == 6 && isTutorialCompleted == 0)
+            {
+                tutorial.TutorialComplete();
+                isTutorialCompleted = 1;
+                PlayerPrefs.SetInt("tutorialCompleted", 1);
+            }
+            //newElement.transform.DOPunchScale(new Vector3(0.3f, 0.3f, 0), 0.3f);
+            particleEffect.transform.position = elementB.transform.position;
+            particleEffect.Play();
             Destroy(elementA);
         }
     }
@@ -265,7 +284,7 @@ public class GameManager : MonoBehaviour
 
     string formatMoneyText()
     {
-        string formattedNumber = coins.ToString("0.00");
+        string formattedNumber = coins.ToString("0.0");
         int dotIndex = formattedNumber.IndexOf('.');
         if (dotIndex >= 0 && formattedNumber.Length > dotIndex + 3)
         {

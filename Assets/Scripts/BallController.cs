@@ -1,39 +1,41 @@
 using UnityEngine;
-using DG;
 using DG.Tweening;
-using Unity.Burst.CompilerServices;
+
 public class BallController : MonoBehaviour
 {
-    public float speed = 5f;
+    public float speed = 15f;
     public Vector2 direction;
     public bool inTube = true;
     public float rayLength = 2f; // Длина луча
     private Collider2D lastHitCollider;
     [SerializeField] Sprite[] sprites;
     private bool isRedirecting = false; // Флаг для предотвращения многократных срабатываний
+    Rigidbody2D rb;
+
+    [SerializeField] ParticleSystem particleSystem;
 
     // Свойство для доступа к текущему направлению мячика
     public Vector2 CurrentDirection
     {
         get { return direction; }
     }
+
     private void Start()
     {
+        rb = GetComponent<Rigidbody2D>();
         GetComponent<SpriteRenderer>().sprite = sprites[Random.Range(0, sprites.Length)];
     }
+
     private void Update()
     {
         // Перемещаем мячик в соответствии с направлением и скоростью
-        transform.Translate(direction * speed * Time.deltaTime);
-       
+        Vector2 newPosition = rb.position + direction * speed * Time.deltaTime;
+
+        // Move the Rigidbody2D to the new position
+        rb.MovePosition(newPosition);
+
         // Отображаем луч в направлении движения
         DrawDirectionRay();
-
-        // Проверка столкновения луча с коллайдером
-        if (!isRedirecting)
-        {
-            CheckRayCollision();
-        }
     }
 
     public void ChangeDirection(Vector2 newDirection)
@@ -49,89 +51,59 @@ public class BallController : MonoBehaviour
         Debug.DrawRay(start, end - start, Color.red);
     }
 
-    private void CheckRayCollision()
-    {
-        int layerMask = ~(1 << LayerMask.NameToLayer("Ball"));
-
-        Vector2 start = transform.position;
-        RaycastHit2D hit = Physics2D.Raycast(start, direction, rayLength, layerMask);
-
-        if (hit.collider != null && hit.collider != lastHitCollider)
-        {
-            lastHitCollider = hit.collider; 
-
-            if (hit.collider.TryGetComponent<Direction>(out Direction directionComponent) && hit.collider.CompareTag("Direction"))
-            {
-                directionComponent.OnRayHit(this);
-            }
-            else if (hit.collider.TryGetComponent<CheckBall>(out CheckBall checkBallComponent))
-            {
-                checkBallComponent.OnRayHit();
-            }
-           
-        }
-    }
-
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.tag != "Rewarded")
+        if(other.CompareTag("Rewarded"))
+            return;
+        if (other != lastHitCollider)
         {
-            if (other.tag != "Ball")
+            lastHitCollider = other;
+
+            if (other.CompareTag("Direction"))
             {
-               
-                if (other != null && other != lastHitCollider)
+                if (other.TryGetComponent<Direction>(out Direction directionComponent))
                 {
-                    if (other.transform.parent.TryGetComponent<MazeElement>(out MazeElement mazeElement))
-                    {
-                        if (other.CompareTag("Gipotenuza"))
-                        {
-                            print("ball");
-
-                            if (mazeElement.gameObject.tag != "Respawn")
-                            {
-
-                                mazeElement.Reflect(direction, this, true);
-                            }
-
-                            mazeElement.AddMoney(false, mazeElement.transform);
-                        }
-                        else if (other.CompareTag("Katet"))
-                        {
-                            mazeElement.Reflect(direction, this, false);
-                        }
-                        else if (other.CompareTag("Petal"))
-                        {
-
-                            mazeElement.AddMoney(true, mazeElement.transform);
-                            mazeElement.gameObject.transform.DOPunchScale(new Vector3(0.05f, 0.05f, 0), 0.3f);
-                        }
-                    }
-
-                    GameManager.instance.SaveGame();
+                    directionComponent.OnRayHit(this);
                 }
             }
-            else if (other.tag == "Ball" && other.transform.parent == null || !other.transform.parent.CompareTag("MazeElement"))
+            else if (other.CompareTag("Gipotenuza") || other.CompareTag("Katet") || other.CompareTag("Petal"))
             {
-                print("1");
-                direction *= -1;
-                ParticleSystem part = Instantiate(particleSystem, transform.position, Quaternion.identity);
-
-                part.transform.position = transform.position;
-                part.Play();
-                Destroy(part.gameObject, 2);
+                if (other.transform.parent.TryGetComponent<MazeElement>(out MazeElement mazeElement))
+                {
+                    if (other.CompareTag("Gipotenuza"))
+                    {
+                        if (mazeElement.gameObject.tag != "Respawn")
+                        {
+                            mazeElement.Reflect(direction, this, true);
+                        }
+                        mazeElement.AddMoney(false, mazeElement.transform);
+                    }
+                    else if (other.CompareTag("Katet"))
+                    {
+                        mazeElement.Reflect(direction, this, false);
+                    }
+                    else if (other.CompareTag("Petal"))
+                    {
+                        mazeElement.AddMoney(true, mazeElement.transform);
+                        mazeElement.gameObject.transform.DOPunchScale(new Vector3(0.05f, 0.05f, 0), 0.3f);
+                    }
+                }
             }
-            else
+            else if (other.CompareTag("Ball"))
             {
-                direction *= -1;
-
+                if (other.transform.parent == null || !other.transform.parent.CompareTag("MazeElement"))
+                {
+                    direction *= -1;
+                    ParticleSystem part = Instantiate(particleSystem, transform.position, Quaternion.identity);
+                    part.transform.position = transform.position;
+                    part.Play();
+                    Destroy(part.gameObject, 2);
+                }
+                else
+                {
+                    direction *= -1;
+                }
             }
         }
-        
     }
-    [SerializeField] ParticleSystem particleSystem;
 }
-
-
-
-
-

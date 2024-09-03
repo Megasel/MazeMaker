@@ -1,3 +1,4 @@
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
@@ -8,9 +9,13 @@ public class MazeElement : MonoBehaviour
     public enum ElementType { Triangle, Rectangle }
     public ElementType type;
     [SerializeField] GameObject moneyTextEffect;
+    [SerializeField] public SpriteRenderer elementSprite;
     public enum TriangleOrientation { BottomLeft, BottomRight, TopLeft, TopRight }
     public TriangleOrientation triangleOrientation;
-    
+    private void Awake()
+    {
+        elementSprite = GetComponent<SpriteRenderer>();
+    }
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.collider.CompareTag("Ball"))
@@ -22,7 +27,10 @@ public class MazeElement : MonoBehaviour
             }
         }
     }
-
+    private void Start()
+    {
+        transform.DOPunchScale(new Vector3(0.3f, 0.3f, 0), 0.3f);
+    }
     public void RedirectBall(BallController ball, Vector2 normal)
     {
         Vector2 incomingDirection = ball.CurrentDirection;
@@ -60,7 +68,7 @@ public class MazeElement : MonoBehaviour
 
         GameManager.instance.coins += addedCoins;
         GameManager.instance.UpdateUi();
-
+        GameManager.instance.SaveGame();
 
 
 
@@ -68,8 +76,6 @@ public class MazeElement : MonoBehaviour
     public void Reflect(Vector2 incomingDirection, BallController ball, bool isGipotinuze)
     {
         Vector2 newDirection = Vector2.zero;
-
-
         if (isGipotinuze)
         {
             switch (triangleOrientation)

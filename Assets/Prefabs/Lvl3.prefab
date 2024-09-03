@@ -482,7 +482,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 3.5153925, y: -0.0000002682209}
+  m_Offset: {x: 3.6051478, y: -0.00000023841858}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -493,7 +493,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 2.49, y: 1.2502496}
+  m_Size: {x: 2.6695108, y: 1.2502496}
   m_EdgeRadius: 0
 --- !u!114 &2811282986931436748
 MonoBehaviour:
@@ -617,7 +617,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 958ae744d4d6bfe44a3933c82e06d02a, type: 3}
-  m_Color: {r: 1, g: 0.9716589, b: 0.45882356, a: 1}
+  m_Color: {r: 0.9294118, g: 0.9686275, b: 0.18039216, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -701,4 +701,5 @@ MonoBehaviour:
   multiplier: 2
   type: 1
   moneyTextEffect: {fileID: 4741357179130310067, guid: b8fcfd5f2adacb14db27136087efb1f3, type: 3}
+  elementSprite: {fileID: 0}
   triangleOrientation: 2

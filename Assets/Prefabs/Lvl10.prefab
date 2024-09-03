@@ -531,7 +531,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 4e67bb6f9770909488872d209599bdd8, type: 3}
-  m_Color: {r: 1, g: 0.45882356, b: 0.9171784, a: 1}
+  m_Color: {r: 1, g: 0.25, b: 0.88636374, a: 1}
   m_FlipX: 0
   m_FlipY: 1
   m_DrawMode: 0
@@ -615,6 +615,7 @@ MonoBehaviour:
   multiplier: 3
   type: 1
   moneyTextEffect: {fileID: 4741357179130310067, guid: b8fcfd5f2adacb14db27136087efb1f3, type: 3}
+  elementSprite: {fileID: 0}
   triangleOrientation: 2
 --- !u!1 &9022085393188699127
 GameObject:

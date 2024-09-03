@@ -1,5 +1,6 @@
 using DG.Tweening;
 using InstantGamesBridge;
+using InstantGamesBridge.Modules.Advertisement;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -26,10 +27,20 @@ public class RewardedObject : MonoBehaviour
 
     private void Advertisement_rewardedStateChanged(InstantGamesBridge.Modules.Advertisement.RewardedState obj)
     {
-        if(obj == InstantGamesBridge.Modules.Advertisement.RewardedState.Rewarded)
+        if (obj == RewardedState.Opened )
+        {
+            Time.timeScale = 0;
+        }
+        if (obj == RewardedState.Closed )
+        {
+            Time.timeScale = 1;
+        }
+
+        if (obj == InstantGamesBridge.Modules.Advertisement.RewardedState.Rewarded)
         {
             Debug.Log("Spawn");
             bottomButtons.AddShape(true,randShape);
+            GameManager.instance.SaveGame();
         }
     }
 
@@ -44,6 +55,12 @@ public class RewardedObject : MonoBehaviour
          randShape = Random.Range(0, shapePrefabs.Count);
         yield return new WaitForSeconds(60);
         GameObject shape = Instantiate(shapePrefabs[randShape], transform.position,Quaternion.identity,transform);
+        Destroy(shape.GetComponent<MazeElement>());
+        Destroy(shape.GetComponent<DragAndDrop>());
+        foreach (Collider2D col in shape.GetComponentsInChildren<Collider2D>())
+        {
+            Destroy(col);
+        }
         //shape.GetComponent<DragAndDrop>().enabled = false;
         Collider2D[] colliders = shape.GetComponents<Collider2D>();
 

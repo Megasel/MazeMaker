@@ -7,15 +7,15 @@ public class DragAndDrop : MonoBehaviour
     private Vector3 originalPosition;
     public Cell currentCell; 
     private Collider2D[] colliders;
-    private MazeElement mazeElement; 
-
+    private MazeElement mazeElement;
+    Tutorial tutorial;
     private void Start()
     {
         originalPosition = transform.position;
         currentCell = FindNearestCell();
         colliders = GetComponentsInChildren<Collider2D>();
         mazeElement = GetComponent<MazeElement>(); 
-
+        tutorial = FindAnyObjectByType<Tutorial>();
         if (currentCell != null)
         {
             currentCell.isEmpty = false;
@@ -42,14 +42,19 @@ public class DragAndDrop : MonoBehaviour
     {
         isDragging = false;
         Cell nearestCell = FindNearestCell();
-
+       
         if (nearestCell != null)
         {
             MazeElement existingElement = nearestCell.GetComponentInChildren<MazeElement>();
 
             if (nearestCell.isEmpty || nearestCell == currentCell)
             {
-                SnapToCell(nearestCell);
+                if (GameManager.instance.isTutorialCompleted == 0 && tutorial.currentStep == nearestCell.tutorialStep && nearestCell)
+                {
+                    tutorial.NextStep();
+
+                }
+                 SnapToCell(nearestCell);
             }
             else if (existingElement != null)
             {
@@ -98,7 +103,7 @@ public class DragAndDrop : MonoBehaviour
         mousePoint.z = Camera.main.WorldToScreenPoint(gameObject.transform.position).z;
         return Camera.main.ScreenToWorldPoint(mousePoint);
     }
-
+   
     private Cell FindNearestCell()
     {
         Cell[] cells = FindObjectsOfType<Cell>();
@@ -127,11 +132,11 @@ public class DragAndDrop : MonoBehaviour
 
     public void SnapToCell(Cell cell)
     {
+         
         if (currentCell != null && currentCell != cell)
         {
             currentCell.isEmpty = true;
         }
-
         originalPosition = cell.transform.position;
         transform.position = cell.transform.position;
 

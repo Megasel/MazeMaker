@@ -18,7 +18,7 @@ public class BottomButtons : MonoBehaviour
     [SerializeField] private GameObject rewardButton;
     [SerializeField] private BoxCollider2D buttCol;
     [SerializeField] private BoxCollider2D rewCol;
-
+    [SerializeField] private Tutorial tutorial;
     public enum ButtonType
     {
         AddShape,
@@ -53,12 +53,40 @@ public class BottomButtons : MonoBehaviour
             spriteRenderer.color = color;
             rewardButton.SetActive(true);
             buttCol.enabled = false;
-            rewCol.enabled = true;
+            if(GameManager.instance.isTutorialCompleted == 1)
+                 rewCol.enabled = true;
+        }
+        if (Input.GetMouseButtonDown(0)) // 0 - левая кнопка мыши, 1 - правая, 2 - средняя
+        {
+            CheckObjectUnderMouse();
         }
     }
 
+
+    void CheckObjectUnderMouse()
+    {
+        // Получаем позицию мыши в мировых координатах
+        Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        // Выполняем Raycast для обнаружения объектов под мышью
+        RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+
+        // Проверяем, что Raycast попал в объект
+        if (hit.collider != null)
+        {
+            // Обрабатываем взаимодействие с объектом
+            Debug.Log("Clicked on object: " + hit.collider.gameObject.tag);
+
+            
+        }
+        else
+        {
+            Debug.Log("No object clicked.");
+        }
+    }
     private void OnMouseDown()
     {
+        Debug.Log("!");
         GameManager.instance.actions++;
         if (GameManager.instance.coins >= price)
         {
@@ -79,16 +107,32 @@ public class BottomButtons : MonoBehaviour
                 AddShape(isRewarded,0);
                 break;
             case ButtonType.AddBall:
-                AddBall(isRewarded);
+                if(GameManager.instance.isTutorialCompleted == 1)
+                {
+                    AddBall(isRewarded);
+                }
+                
                 break;
             case ButtonType.Income:
-                Income(isRewarded);
+                if (GameManager.instance.isTutorialCompleted == 1)
+                {
+                    Income(isRewarded);
+                }
+                    
                 break;
         }
     }
 
     private void OnRewardedStateChanged(RewardedState state)
     {
+        if(state == RewardedState.Opened && currentInstance == this)
+        {
+            Time.timeScale = 0;
+        }
+        if(state == RewardedState.Closed && currentInstance == this)
+        {
+            Time.timeScale = 1;
+        }
         if (state == RewardedState.Rewarded && currentInstance == this)
         {
             ExecuteAction(true);
@@ -128,6 +172,10 @@ public class BottomButtons : MonoBehaviour
                     GameManager.instance.CalculatePrice(this);
                 break;
             }
+        }
+        if(tutorial.currentStep == 1 || tutorial.currentStep == 3 || tutorial.currentStep == 5)
+        {
+            tutorial.NextStep();
         }
     }
 
