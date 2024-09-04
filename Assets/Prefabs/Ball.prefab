@@ -99,7 +99,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcd5e2faf47b3ff44bb479e9aecf0574, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 7
+  speed: 15
   direction: {x: 0, y: -1}
   inTube: 1
   rayLength: 0.17

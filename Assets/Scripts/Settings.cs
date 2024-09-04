@@ -17,7 +17,14 @@ public class Settings : MonoBehaviour
             ToggleAudioState(audioEnabled);
         }
     }
+    private void OnMouseDown()
+    {
+        bool isActive = !settingsPanel.activeSelf;
+        settingsPanel.SetActive(isActive);
 
+        PlayerPrefs.SetInt("SettingsPanelVisible", isActive ? 1 : 0);
+        PlayerPrefs.Save();
+    }
     public void Toggle()
     {
         bool isActive = !settingsPanel.activeSelf;

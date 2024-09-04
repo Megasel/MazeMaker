@@ -4,6 +4,7 @@ public class Direction : MonoBehaviour
 {
     [SerializeField] private Dir direction;
     [SerializeField] private bool isBallTube;
+    [SerializeField] private bool fastTube;
 
     private enum Dir
     {
@@ -12,7 +13,14 @@ public class Direction : MonoBehaviour
 
     public void OnRayHit(BallController ball)
     {
-      
+        if (fastTube)
+        {
+            ball.speed = 15;
+        }
+        else
+        {
+            ball.speed = 4;
+        }
         switch (direction)
         {
             case Dir.Left:
