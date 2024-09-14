@@ -52,9 +52,18 @@ public class DragAndDrop : MonoBehaviour
                 if (GameManager.instance.isTutorialCompleted == 0 && tutorial.currentStep == nearestCell.tutorialStep && nearestCell)
                 {
                     tutorial.NextStep();
-
+                    SnapToCell(nearestCell);
                 }
-                 SnapToCell(nearestCell);
+                else if(GameManager.instance.isTutorialCompleted == 0 && tutorial.currentStep != nearestCell.tutorialStep && nearestCell)
+                {
+                    transform.position = originalPosition;
+                }
+                else
+                {
+                    SnapToCell(nearestCell);
+                    
+                }
+                 
             }
             else if (existingElement != null)
             {

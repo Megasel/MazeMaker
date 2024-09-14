@@ -201,11 +201,13 @@ public class GameManager : MonoBehaviour
             GameState gameState = JsonUtility.FromJson<GameState>(json);
             Cell[] cells = FindObjectsOfType<Cell>();
 
+            // Ensure the cells are marked correctly as empty or not
             for (int i = 0; i < gameState.cells.Count; i++)
             {
                 cells[i].isEmpty = gameState.cells[i].isEmpty;
             }
 
+            // Correctly place each element in its respective cell
             foreach (ElementData elementData in gameState.elements)
             {
                 GameObject prefab = shapePrefabs[elementData.level - 1];
@@ -223,20 +225,16 @@ public class GameManager : MonoBehaviour
                 if (elementData.cellIndex >= 0 && elementData.cellIndex < cells.Length)
                 {
                     Cell cell = cells[elementData.cellIndex];
-                    newElement.GetComponent<DragAndDrop>().SnapToCell(cell);
+                    newElement.GetComponent<DragAndDrop>().SnapToCell(cell); // Place element correctly
                 }
                 else
                 {
                     Debug.LogWarning($"Invalid cell index {elementData.cellIndex} for element at position {elementData.position}. Skipping this element.");
                 }
-
             }
-
-
-
-
         }
     }
+
 
     public void MergeElements(GameObject elementA, GameObject elementB)
     {

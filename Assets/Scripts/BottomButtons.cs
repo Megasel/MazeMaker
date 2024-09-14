@@ -149,18 +149,19 @@ public class BottomButtons : MonoBehaviour
         switch (buttonType)
         {
             case ButtonType.AddShape:
-                price = GameManager.instance.shapesPrice;
+                price = PlayerPrefs.GetFloat("shapesPrice", 1);
                 break;
             case ButtonType.AddBall:
-                price = GameManager.instance.ballsPrice;
+                price = PlayerPrefs.GetFloat("ballsPrice", 10000);
                 break;
             case ButtonType.Income:
-                price = GameManager.instance.incomePrice;
+                price = PlayerPrefs.GetFloat("incomePrice", 100);
                 break;
         }
+        priceText.text = "$" + GameManager.instance.FormatNumber(price);  // Update the UI after loading
     }
 
-    public void AddShape(bool isRewarded,int id)
+    public void AddShape(bool isRewarded, int id)
     {
         foreach (Cell element in cellPositions)
         {
@@ -169,14 +170,33 @@ public class BottomButtons : MonoBehaviour
                 GameObject newShape = Instantiate(shape[id], element.transform.position, Quaternion.identity, element.transform);
                 newShape.GetComponent<DragAndDrop>().SnapToCell(element);
                 if (!isRewarded)
+                {
                     GameManager.instance.CalculatePrice(this);
+                    SavePrice();  // Save price after calculation
+                }
                 break;
             }
         }
-        if(tutorial.currentStep == 1 || tutorial.currentStep == 3 || tutorial.currentStep == 5)
+        if (tutorial.currentStep == 1 || tutorial.currentStep == 3 || tutorial.currentStep == 5)
         {
             tutorial.NextStep();
         }
+    }
+    public void SavePrice()
+    {
+        switch (buttonType)
+        {
+            case ButtonType.AddShape:
+                PlayerPrefs.SetFloat("shapesPrice", price);
+                break;
+            case ButtonType.AddBall:
+                PlayerPrefs.SetFloat("ballsPrice", price);
+                break;
+            case ButtonType.Income:
+                PlayerPrefs.SetFloat("incomePrice", price);
+                break;
+        }
+        PlayerPrefs.Save();  // Always save PlayerPrefs after a change
     }
 
     void AddBall(bool isRewarded)

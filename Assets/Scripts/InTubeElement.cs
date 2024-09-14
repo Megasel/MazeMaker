@@ -21,12 +21,27 @@ public class InTubeElement : MonoBehaviour
 
             GameObject text = Instantiate(moneyTextEffect, Vector3.zero, Quaternion.identity, textContainer.transform);
             TMP_Text textComponent = text.GetComponent<TMP_Text>();
-            textComponent.text = addedCoins.ToString();
+            textComponent.text = FormatNumber(addedCoins);
             textComponent.rectTransform.anchoredPosition = new Vector2(0, textComponent.rectTransform.position.y);
             Destroy(textContainer, 1.5f);
 
             GameManager.instance.coins += addedCoins;
             GameManager.instance.UpdateUi();
+        }
+    }
+    public string FormatNumber(float number)
+    {
+        if (number >= 1000000)
+        {
+            return (number / 1000000f).ToString("0.0") + "M";
+        }
+        else if (number >= 1000)
+        {
+            return (number / 1000f).ToString("0.0") + "K";
+        }
+        else
+        {
+            return number.ToString("0.00");
         }
     }
 }

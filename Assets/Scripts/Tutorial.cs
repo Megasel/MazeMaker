@@ -24,6 +24,10 @@ public class Tutorial : MonoBehaviour
             tutorialObj.SetActive(false);
           
         }
+        else
+        {
+            PlayerPrefs.DeleteAll();
+        }
     }
     public void NextStep()
     {
