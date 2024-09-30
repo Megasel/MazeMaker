@@ -68,16 +68,19 @@ public class DragAndDrop : MonoBehaviour
             else if (existingElement != null)
             {
                 MazeElement thisElement = GetComponent<MazeElement>();
-
-                if (existingElement.level == thisElement.level)
+               
+                if (existingElement.level == thisElement.level && (PlayerPrefs.GetInt("tutorialCompleted") == 0 && tutorial.currentStep == 6 || PlayerPrefs.GetInt("tutorialCompleted") == 1))
                 {
+                    print("swap");
                     currentCell.isEmpty = true;
 
-                    GameManager.instance.MergeElements(existingElement.gameObject, gameObject);
+                        GameManager.instance.MergeElements(existingElement.gameObject, gameObject);
+                    
+                    
                 }
                 else
                 {
-                    
+
                     SwapElements(existingElement);
                 }
             }
@@ -93,7 +96,6 @@ public class DragAndDrop : MonoBehaviour
 
         SetCollidersEnabled(true);
         mazeElement.enabled = true; 
-        GameManager.instance.SaveGame();
         GameManager.instance.actions++;
         GameManager.instance.ShowInterstitial();
     }
@@ -141,7 +143,6 @@ public class DragAndDrop : MonoBehaviour
 
     public void SnapToCell(Cell cell)
     {
-         
         if (currentCell != null && currentCell != cell)
         {
             currentCell.isEmpty = true;
@@ -155,9 +156,9 @@ public class DragAndDrop : MonoBehaviour
 
         cell.isEmpty = false;
         currentCell = cell;
-            GameManager.instance.SaveGame();
-
+        GameManager.instance.SaveGame();
     }
+
 
     private void SwapElements(MazeElement otherElement)
     {

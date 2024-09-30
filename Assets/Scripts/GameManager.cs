@@ -1,10 +1,8 @@
-using DG.Tweening;
 using InstantGamesBridge;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 [System.Serializable]
 public class GameState
 {
@@ -32,9 +30,9 @@ public class CellData
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance { get; private set; }
-    public float shapesPrice = 1;
-    public float ballsPrice = 10000;
-    public float incomePrice = 100;
+    public float shapesPrice = 0;
+    public float ballsPrice = 525;
+    public float incomePrice = 31;
 
     public int shapesLevel = 1;
     public int ballsLevel = 1;
@@ -56,6 +54,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] ParticleSystem particleEffect;
     public int isTutorialCompleted;
     public Tutorial tutorial;
+    DragAndDrop dragAndDrop;
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -65,7 +64,7 @@ public class GameManager : MonoBehaviour
         }
 
         instance = this;
-        DontDestroyOnLoad(gameObject);
+        //DontDestroyOnLoad(gameObject);
         tutorial = GetComponent<Tutorial>();
         
     }
@@ -76,12 +75,13 @@ public class GameManager : MonoBehaviour
    
     private void Start()
     {
+        dragAndDrop = FindAnyObjectByType<DragAndDrop>();
         LoadGame();
-        Debug.Log(PlayerPrefs.GetFloat("coins"));
         tutorial = FindAnyObjectByType<Tutorial>();
         UpdateUi();
         StartCoroutine(GenerateBalls());
     }
+    
     IEnumerator GenerateBalls()
     {
         yield return new WaitForSeconds(1);
@@ -102,7 +102,7 @@ public class GameManager : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Y))
         {
-            PlayerPrefs.GetFloat("coins");
+            SaveCells();
         }
         if (actions == 100)
         {
@@ -115,28 +115,31 @@ public class GameManager : MonoBehaviour
             actions = 0;
         }
     }
-
-    public void SaveGame()
+    public void SaveCells()
     {
         GameState gameState = new GameState();
         Cell[] cells = FindObjectsOfType<Cell>();
-
+        //print("COUNT: " + FindObjectsOfType<MazeElement>().Length);
         foreach (MazeElement element in FindObjectsOfType<MazeElement>())
         {
-
             Cell cell = element.GetComponentInParent<Cell>();
-            int cellIndex = System.Array.IndexOf(cells, cell);
-
-            ElementData elementData = new ElementData
+            if (cell != null)
             {
-                type = element.type.ToString(),
-                level = element.level,
-                position = element.transform.position,
-                orientation = element.type == MazeElement.ElementType.Triangle ? element.triangleOrientation : (MazeElement.TriangleOrientation?)null,
-                cellIndex = cellIndex
-            };
-            gameState.elements.Add(elementData);
-
+                int cellIndex = System.Array.IndexOf(cells, cell);
+                ElementData elementData = new ElementData
+                {
+                    type = element.type.ToString(),
+                    level = element.level,
+                    position = element.transform.position,
+                    orientation = element.type == MazeElement.ElementType.Triangle ? element.triangleOrientation : (MazeElement.TriangleOrientation?)null,
+                    cellIndex = cellIndex
+                };
+                gameState.elements.Add(elementData);
+            }
+            else
+            {
+                Debug.LogWarning($"Element {element.name} is not attached to any cell.");
+            }
         }
 
         foreach (Cell cell in cells)
@@ -145,10 +148,15 @@ public class GameManager : MonoBehaviour
         }
 
         gameState.ballCount = FindObjectsOfType<BallController>().Length;
-
         string json = JsonUtility.ToJson(gameState, true);
+        //print(json);
         PlayerPrefs.SetString("GameState", json);
+    }
 
+    public void SaveGame()
+    {
+        
+        SaveCells();
         PlayerPrefs.SetFloat("shapesPrice", shapesPrice);
         PlayerPrefs.SetFloat("ballsPrice", ballsPrice);
         PlayerPrefs.SetFloat("incomePrice", incomePrice);
@@ -183,10 +191,10 @@ public class GameManager : MonoBehaviour
     }
     public void LoadGame()
     {
-        shapesPrice = PlayerPrefs.GetFloat("shapesPrice", 1);
-        ballsPrice = PlayerPrefs.GetFloat("ballsPrice", 10000);
-        incomePrice = PlayerPrefs.GetFloat("incomePrice", 100);
-        coins = PlayerPrefs.GetFloat("coins", 30);
+        shapesPrice = PlayerPrefs.GetFloat("shapesPrice", 0);
+        ballsPrice = PlayerPrefs.GetFloat("ballsPrice", 525);
+        incomePrice = PlayerPrefs.GetFloat("incomePrice", 31);
+        coins = PlayerPrefs.GetFloat("coins", 300);
         globalMultiplier = PlayerPrefs.GetFloat("globalMultiplier", 1);
         shapesLevel = PlayerPrefs.GetInt("shapesLevel", 1);
         ballsLevel = PlayerPrefs.GetInt("ballsLevel", 1);
@@ -201,31 +209,44 @@ public class GameManager : MonoBehaviour
             GameState gameState = JsonUtility.FromJson<GameState>(json);
             Cell[] cells = FindObjectsOfType<Cell>();
 
-            // Ensure the cells are marked correctly as empty or not
             for (int i = 0; i < gameState.cells.Count; i++)
             {
-                cells[i].isEmpty = gameState.cells[i].isEmpty;
+                if (i < cells.Length)
+                {
+                    cells[i].isEmpty = gameState.cells[i].isEmpty;
+                }
+                else
+                {
+                    Debug.LogWarning($"Saved cell index {i} is out of bounds for current cells array.");
+                }
             }
 
-            // Correctly place each element in its respective cell
             foreach (ElementData elementData in gameState.elements)
             {
-                GameObject prefab = shapePrefabs[elementData.level - 1];
-                GameObject newElement = Instantiate(prefab, elementData.position, Quaternion.identity);
-
-                MazeElement mazeElement = newElement.GetComponent<MazeElement>();
-                mazeElement.level = elementData.level;
-                mazeElement.type = (MazeElement.ElementType)System.Enum.Parse(typeof(MazeElement.ElementType), elementData.type);
-
-                if (mazeElement.type == MazeElement.ElementType.Triangle && elementData.orientation.HasValue)
-                {
-                    mazeElement.triangleOrientation = elementData.orientation.Value;
-                }
-
                 if (elementData.cellIndex >= 0 && elementData.cellIndex < cells.Length)
                 {
                     Cell cell = cells[elementData.cellIndex];
-                    newElement.GetComponent<DragAndDrop>().SnapToCell(cell); // Place element correctly
+                    GameObject prefab = shapePrefabs[elementData.level - 1];
+                    GameObject newElement = Instantiate(prefab, elementData.position, Quaternion.identity);
+
+                    MazeElement mazeElement = newElement.GetComponent<MazeElement>();
+                    mazeElement.level = elementData.level;
+                    mazeElement.type = (MazeElement.ElementType)System.Enum.Parse(typeof(MazeElement.ElementType), elementData.type);
+
+                    if (mazeElement.type == MazeElement.ElementType.Triangle && elementData.orientation.HasValue)
+                    {
+                        mazeElement.triangleOrientation = elementData.orientation.Value;
+                    }
+
+                    DragAndDrop dragAndDrop = newElement.GetComponent<DragAndDrop>();
+                    if (dragAndDrop != null)
+                    {
+                        dragAndDrop.SnapToCell(cell); // Place element correctly
+                    }
+                    else
+                    {
+                        Debug.LogWarning("DragAndDrop component is missing on the element prefab.");
+                    }
                 }
                 else
                 {
@@ -234,6 +255,7 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
 
 
     public void MergeElements(GameObject elementA, GameObject elementB)
@@ -268,10 +290,20 @@ public class GameManager : MonoBehaviour
             //newElement.transform.DOPunchScale(new Vector3(0.3f, 0.3f, 0), 0.3f);
             particleEffect.transform.position = elementB.transform.position;
             particleEffect.Play();
+            
+            mazeElementA.GetComponent<DragAndDrop>().currentCell = null;
+            mazeElementB.GetComponent<DragAndDrop>().currentCell = null;
             Destroy(elementA);
+            StartCoroutine(SaveMerge());
         }
+        
     }
+    IEnumerator SaveMerge()
+    {
+        yield return new WaitForSeconds(0.5f);
+        SaveCells();
 
+    }
     public void UpdateUi()
     {
         moneyText.text = "$" + FormatNumber(coins);
@@ -294,11 +326,20 @@ public class GameManager : MonoBehaviour
 
     public void CalculatePrice(BottomButtons button)
     {
-        coins -= button.price;
+         float[] shapesPrices = new float[] { 0,0,0,0, 28, 36, 48, 78, 82, 88, 98, 112, 126, 162, 174, 184, 192, 200, 210, 239, 253, 272, 299, 434, 542, 616, 686, 711, 727, 764, 814, 888, 932, 999, 1100, 1200, 1300 };
+    coins -= button.price;
         switch (button.buttonType)
         {
             case BottomButtons.ButtonType.AddShape:
-                button.price += 3;
+                if (shapesLevel < shapesPrices.Length)
+                {
+                    button.price = shapesPrices[shapesLevel];
+                    shapesPrice = button.price;
+                }
+                else
+                {
+                    button.price = button.price * 1.02f;
+                }
                 button.UpdateUi();
                 shapesLevel++;
                 shapesPrice = button.price;

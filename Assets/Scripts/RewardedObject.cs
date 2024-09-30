@@ -14,6 +14,7 @@ public class RewardedObject : MonoBehaviour
     [SerializeField] GameObject shape;
     int posIndex = 0;
     int randShape;
+    bool isClick = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -29,31 +30,40 @@ public class RewardedObject : MonoBehaviour
     {
         if (obj == RewardedState.Opened )
         {
+            foreach(AudioSource aud in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+            {
+                aud.enabled = false;    
+            }
             Time.timeScale = 0;
         }
         if (obj == RewardedState.Closed )
         {
+            foreach (AudioSource aud in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+            {
+                aud.enabled = true;
+            }
             Time.timeScale = 1;
         }
 
-        if (obj == InstantGamesBridge.Modules.Advertisement.RewardedState.Rewarded)
+        if (obj == InstantGamesBridge.Modules.Advertisement.RewardedState.Rewarded && isClick)
         {
+            isClick = false ;
             Debug.Log("Spawn");
-            bottomButtons.AddShape(true,randShape);
+            bottomButtons.AddShapeFromRewarded(true,randShape);
             GameManager.instance.SaveGame();
         }
     }
 
     private void OnMouseDown()
     {
-        
+        isClick = true;
         Bridge.advertisement.ShowRewarded();
 
     }
     IEnumerator StartFly()
     {
          randShape = Random.Range(0, shapePrefabs.Count);
-        yield return new WaitForSeconds(60);
+        yield return new WaitForSeconds(5);
         GameObject shape = Instantiate(shapePrefabs[randShape], transform.position,Quaternion.identity,transform);
         Destroy(shape.GetComponent<MazeElement>());
         Destroy(shape.GetComponent<DragAndDrop>());

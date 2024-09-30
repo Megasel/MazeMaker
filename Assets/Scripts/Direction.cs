@@ -15,7 +15,7 @@ public class Direction : MonoBehaviour
     {
         if (fastTube)
         {
-            ball.speed = 13;
+            ball.speed = 15;
         }
         else
         {

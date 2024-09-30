@@ -19,7 +19,7 @@ public class TmpLocalisation : MonoBehaviour
         }
     }
 
-    private void Awake()
+    private void Start()
     {
         switch (Bridge.platform.language)
         {

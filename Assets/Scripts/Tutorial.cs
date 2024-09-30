@@ -1,8 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Tutorial : MonoBehaviour
+public class Tutorial : MonoBehaviour 
 {
     public int currentStep = 1;
     [SerializeField] private List<GameObject> stepsObjects = new List<GameObject>();
@@ -22,7 +21,7 @@ public class Tutorial : MonoBehaviour
                 box.enabled = true;
             }
             tutorialObj.SetActive(false);
-          
+            currentStep = 6;
         }
         else
         {
@@ -35,6 +34,7 @@ public class Tutorial : MonoBehaviour
         stepsObjects[currentStep-1].SetActive(false);  
         stepsObjects[currentStep].SetActive(true);
         currentStep++;
+      
     }
     public void TutorialComplete()
     {

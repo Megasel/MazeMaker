@@ -19,6 +19,7 @@ public class BottomButtons : MonoBehaviour
     [SerializeField] private BoxCollider2D buttCol;
     [SerializeField] private BoxCollider2D rewCol;
     [SerializeField] private Tutorial tutorial;
+    bool addShapeRewarded = false;
     public enum ButtonType
     {
         AddShape,
@@ -43,7 +44,15 @@ public class BottomButtons : MonoBehaviour
             color.a = 1;
             spriteRenderer.color = color;
             rewardButton.SetActive(false);
-            buttCol.enabled = true;
+            if (tutorial.currentStep == 2 || tutorial.currentStep == 4 || tutorial.currentStep == 6 && PlayerPrefs.GetInt("tutorialCompleted") == 0) {
+                buttCol.enabled = false;
+
+            }
+            else
+            {
+                buttCol.enabled = true;
+
+            }
             rewCol.enabled = false;
         }
         else
@@ -75,7 +84,6 @@ public class BottomButtons : MonoBehaviour
         if (hit.collider != null)
         {
             // Обрабатываем взаимодействие с объектом
-            Debug.Log("Clicked on object: " + hit.collider.gameObject.tag);
 
             
         }
@@ -94,8 +102,10 @@ public class BottomButtons : MonoBehaviour
         }
         else
         {
-            currentInstance = this; // Сохраняем ссылку на текущий объект
+            currentInstance = this;
+           // ExecuteAction(true); // Сохраняем ссылку на текущий объект
             Bridge.advertisement.ShowRewarded();
+            addShapeRewarded = true;
         }
     }
 
@@ -104,7 +114,20 @@ public class BottomButtons : MonoBehaviour
         switch (buttonType)
         {
             case ButtonType.AddShape:
-                AddShape(isRewarded,0);
+                print("addShaepe");
+                if(isRewarded && addShapeRewarded)
+                {
+                    print("addShape");
+                    AddShape(isRewarded, 0);
+                    addShapeRewarded = false;
+                }
+                else
+                {
+                    AddShape(isRewarded, 0);
+                }
+                   
+                
+                    
                 break;
             case ButtonType.AddBall:
                 if(GameManager.instance.isTutorialCompleted == 1)
@@ -125,12 +148,21 @@ public class BottomButtons : MonoBehaviour
 
     private void OnRewardedStateChanged(RewardedState state)
     {
+        
         if(state == RewardedState.Opened && currentInstance == this)
         {
+            foreach(AudioSource aud in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+            {
+                aud.enabled = false;
+            }
             Time.timeScale = 0;
         }
         if(state == RewardedState.Closed && currentInstance == this)
         {
+            foreach (AudioSource aud in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+            {
+                aud.enabled = true;
+            }
             Time.timeScale = 1;
         }
         if (state == RewardedState.Rewarded && currentInstance == this)
@@ -149,13 +181,13 @@ public class BottomButtons : MonoBehaviour
         switch (buttonType)
         {
             case ButtonType.AddShape:
-                price = PlayerPrefs.GetFloat("shapesPrice", 1);
+                price = PlayerPrefs.GetFloat("shapesPrice", 0);
                 break;
             case ButtonType.AddBall:
-                price = PlayerPrefs.GetFloat("ballsPrice", 10000);
+                price = PlayerPrefs.GetFloat("ballsPrice", 525);
                 break;
             case ButtonType.Income:
-                price = PlayerPrefs.GetFloat("incomePrice", 100);
+                price = PlayerPrefs.GetFloat("incomePrice", 31);
                 break;
         }
         priceText.text = "$" + GameManager.instance.FormatNumber(price);  // Update the UI after loading
@@ -163,11 +195,35 @@ public class BottomButtons : MonoBehaviour
 
     public void AddShape(bool isRewarded, int id)
     {
+        
         foreach (Cell element in cellPositions)
         {
             if (element.isEmpty)
             {
                 GameObject newShape = Instantiate(shape[id], element.transform.position, Quaternion.identity, element.transform);
+                newShape.GetComponent<DragAndDrop>().SnapToCell(element);
+                if (!isRewarded)
+                {
+                    GameManager.instance.CalculatePrice(this);
+                    SavePrice();  // Save price after calculation
+                }
+                break;
+            }
+        }
+        if (tutorial.currentStep == 1 || tutorial.currentStep == 3 || tutorial.currentStep == 5)
+        {
+            tutorial.NextStep();
+        }
+    }
+    public void AddShapeFromRewarded(bool isRewarded, int id)
+    {
+        
+        foreach (Cell element in cellPositions)
+        {
+            if (element.isEmpty)
+            {
+                GameObject newShape = Instantiate(shape[id], element.transform.position, Quaternion.identity, element.transform);
+                newShape.GetComponent<MazeElement>().level = id+ 1;
                 newShape.GetComponent<DragAndDrop>().SnapToCell(element);
                 if (!isRewarded)
                 {
@@ -199,12 +255,22 @@ public class BottomButtons : MonoBehaviour
         PlayerPrefs.Save();  // Always save PlayerPrefs after a change
     }
 
-    void AddBall(bool isRewarded)
+    private bool hasBallBeenAdded = false;
+
+    private void AddBall(bool isRewarded)
     {
+        if (hasBallBeenAdded) return; // Prevent multiple executions
+        hasBallBeenAdded = true;
+
+        // Your ball-adding logic here
         Instantiate(ball, pos.position, Quaternion.identity);
+
         if (!isRewarded)
             GameManager.instance.CalculatePrice(this);
+
+        hasBallBeenAdded = false; // Reset the flag after completion
     }
+
 
     void Income(bool isRewarded)
     {

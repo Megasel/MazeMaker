@@ -93,7 +93,6 @@ public class MazeElement : MonoBehaviour
                     break;
 
                 case TriangleOrientation.BottomRight:
-                    print(incomingDirection);
                     if (incomingDirection == new Vector2(-1, 0))
                     {
                         ball.direction = new Vector2(0, -1);
@@ -105,7 +104,6 @@ public class MazeElement : MonoBehaviour
                     break;
 
                 case TriangleOrientation.TopLeft:
-                    print(incomingDirection);
                     if (incomingDirection == new Vector2(1, 0))
                     {
                         ball.direction = new Vector2(0, 1);
@@ -117,7 +115,6 @@ public class MazeElement : MonoBehaviour
                     break;
 
                 case TriangleOrientation.TopRight:
-                    print(incomingDirection);
                     if (incomingDirection == new Vector2(-1, 0))
                     {
                         ball.direction = new Vector2(0, 1);
