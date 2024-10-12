@@ -16,10 +16,13 @@ public class Direction : MonoBehaviour
         if (fastTube)
         {
             ball.speed = 15;
+            ball.inTube = true;
         }
         else
         {
             ball.speed = 4;
+            ball.inTube = false;
+
         }
         switch (direction)
         {

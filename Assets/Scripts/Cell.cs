@@ -22,7 +22,7 @@ public class Cell : MonoBehaviour
     {
         if (other.CompareTag("MazeElement"))
         {
-            isEmpty = true;
+            //isEmpty = true;
 
         }
     }

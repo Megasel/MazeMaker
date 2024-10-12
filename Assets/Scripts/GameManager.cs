@@ -1,4 +1,5 @@
 using InstantGamesBridge;
+using InstantGamesBridge.Modules.Advertisement;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -33,7 +34,7 @@ public class GameManager : MonoBehaviour
     public float shapesPrice = 0;
     public float ballsPrice = 525;
     public float incomePrice = 31;
-
+    [SerializeField] private AudioSource music;
     public int shapesLevel = 1;
     public int ballsLevel = 1;
     public int incomelevel = 1;
@@ -55,6 +56,11 @@ public class GameManager : MonoBehaviour
     public int isTutorialCompleted;
     public Tutorial tutorial;
     DragAndDrop dragAndDrop;
+    public Transform minBounds; 
+    public Transform maxBounds;
+    public List<Transform> horizontalPoints;
+    public List<Transform> verticalPoints;
+    BottomButtons bottomButtons;
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -68,13 +74,51 @@ public class GameManager : MonoBehaviour
         tutorial = GetComponent<Tutorial>();
         
     }
+    public void AddBall()
+    {
+        Instantiate(ballPrefab, bottomButtons.pos.position, Quaternion.identity);
+    }
+    
+    void OnEnable()
+    {
+        
+
+        Bridge.advertisement.interstitialStateChanged += Advertisement_interstitialStateChanged;
+
+    }
+    private void OnDisable()
+    {
+        Bridge.advertisement.interstitialStateChanged -= Advertisement_interstitialStateChanged;
+    }
     public void ShowInterstitial()
     {
         Bridge.advertisement.ShowInterstitial();
     }
+
+    private void Advertisement_interstitialStateChanged(InterstitialState state)
+    {
+       
+        if (state == InterstitialState.Opened) {
+            foreach (AudioSource aud in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+            {
+                aud.volume = 0;
+            }
+            Time.timeScale = 0;
+        }
+        if(state == InterstitialState.Closed)
+        {
+            foreach (AudioSource aud in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+            {
+                aud.volume = 0.2f;
+            }
+            Time.timeScale = 1;
+        }
+    }
+
    
     private void Start()
     {
+        bottomButtons = FindAnyObjectByType<BottomButtons>();
         dragAndDrop = FindAnyObjectByType<DragAndDrop>();
         LoadGame();
         tutorial = FindAnyObjectByType<Tutorial>();
@@ -92,7 +136,6 @@ public class GameManager : MonoBehaviour
             StartCoroutine(GenerateBalls());
         }
     }
-
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Delete))

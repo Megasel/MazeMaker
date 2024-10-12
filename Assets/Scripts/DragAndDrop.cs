@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class DragAndDrop : MonoBehaviour
@@ -9,6 +11,8 @@ public class DragAndDrop : MonoBehaviour
     private Collider2D[] colliders;
     private MazeElement mazeElement;
     Tutorial tutorial;
+    [SerializeField] private List<SpriteRenderer> spriteRenderers = new List<SpriteRenderer>();
+    private TMP_Text text;
     private void Start()
     {
         originalPosition = transform.position;
@@ -21,13 +25,26 @@ public class DragAndDrop : MonoBehaviour
             currentCell.isEmpty = false;
         }
     }
-
+    private void OnEnable()
+    {
+        text = GetComponentInChildren<TMP_Text>();
+        foreach (SpriteRenderer spr in GetComponentsInChildren<SpriteRenderer>()) { 
+            spriteRenderers.Add(spr);   
+        
+        
+        }
+    }
     private void OnMouseDown()
     {
         SetCollidersEnabled(false);
         mazeElement.enabled = false; 
         offset = transform.position - GetMouseWorldPosition();
         isDragging = true;
+        text.GetComponent<Renderer>().sortingOrder += 100;
+        foreach (SpriteRenderer spriteRenderer in spriteRenderers) 
+        {
+            spriteRenderer.sortingOrder += 100;
+        }
     }
 
     private void OnMouseDrag()
@@ -42,7 +59,11 @@ public class DragAndDrop : MonoBehaviour
     {
         isDragging = false;
         Cell nearestCell = FindNearestCell();
-       
+        text.GetComponent<Renderer>().sortingOrder -= 100;
+        foreach (SpriteRenderer spriteRenderer in spriteRenderers)
+        {
+            spriteRenderer.sortingOrder -= 100;
+        }
         if (nearestCell != null)
         {
             MazeElement existingElement = nearestCell.GetComponentInChildren<MazeElement>();
@@ -162,12 +183,25 @@ public class DragAndDrop : MonoBehaviour
 
     private void SwapElements(MazeElement otherElement)
     {
-
+        // Get the current cells of both elements
         Cell otherCell = otherElement.GetComponent<DragAndDrop>().currentCell;
-
         Cell tempCell = currentCell;
+
+        // Set the original cell to empty
+        currentCell.isEmpty = true;
+
+        // Snap this element to the other cell
         SnapToCell(otherCell);
+
+        // Snap the other element to this cell
         otherElement.GetComponent<DragAndDrop>().SnapToCell(tempCell);
+
+        // After snapping, set the new current cell as not empty
+        otherCell.isEmpty = false;
+        tempCell.isEmpty = false;
+
+        // Save the game state after the swap
         GameManager.instance.SaveGame();
     }
+
 }

@@ -3,6 +3,7 @@ using InstantGamesBridge;
 using InstantGamesBridge.Modules.Advertisement;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -62,8 +63,26 @@ public class RewardedObject : MonoBehaviour
     }
     IEnumerator StartFly()
     {
-         randShape = Random.Range(0, shapePrefabs.Count);
-        yield return new WaitForSeconds(5);
+        List<int> elements = new List<int>();
+        int maxLevelOfElement = 0;
+        foreach (MazeElement element in FindObjectsByType<MazeElement>(FindObjectsSortMode.None).ToList()) {
+
+            elements.Add(element.level);
+            
+        
+        }
+        if(elements.Count > 0 ) 
+            maxLevelOfElement = elements.Max();
+        if (maxLevelOfElement > 4) {
+            randShape = Random.Range(0, maxLevelOfElement);
+
+        }
+        else
+        {
+            randShape = 3;
+        }
+         
+        yield return new WaitForSeconds(60);
         GameObject shape = Instantiate(shapePrefabs[randShape], transform.position,Quaternion.identity,transform);
         Destroy(shape.GetComponent<MazeElement>());
         Destroy(shape.GetComponent<DragAndDrop>());

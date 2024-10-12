@@ -92,7 +92,6 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexJitter.cs" />
     <Compile Include="Assets\InstantGamesBridge\Scripts\Modules\Game\VisibilityState.cs" />
     <Compile Include="Assets\InstantGamesBridge\Scripts\Modules\Leaderboard\LeaderboardModule.cs" />
-    <Compile Include="Assets\Scripts\ShopManager.cs" />
     <Compile Include="Assets\InstantGamesBridge\Scripts\Modules\Advertisement\AdvertisementModule.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_DigitValidator.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_FrameRateCounter.cs" />
@@ -113,6 +112,7 @@
     <Compile Include="Assets\Scripts\TmpLocalisation.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_B.cs" />
     <Compile Include="Assets\InstantGamesBridge\Scripts\Modules\Advertisement\RewardedState.cs" />
+    <Compile Include="Assets\Scripts\SettingsPanel.cs" />
     <Compile Include="Assets\InstantGamesBridge\Scripts\Modules\Device\DeviceModule.cs" />
     <Compile Include="Assets\InstantGamesBridge\Scripts\Modules\Leaderboard\LeaderboardEntry.cs" />
     <Compile Include="Assets\Scripts\CheckBall.cs" />

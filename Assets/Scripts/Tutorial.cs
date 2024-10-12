@@ -25,7 +25,9 @@ public class Tutorial : MonoBehaviour
         }
         else
         {
+            int audioEnabled = PlayerPrefs.GetInt("AudioEnabled", 1);
             PlayerPrefs.DeleteAll();
+            PlayerPrefs.SetInt("AudioEnabled", audioEnabled); 
         }
     }
     public void NextStep()

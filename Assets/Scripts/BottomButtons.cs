@@ -8,7 +8,7 @@ using UnityEngine;
 public class BottomButtons : MonoBehaviour
 {
     [SerializeField] public ButtonType buttonType;
-    [SerializeField] private Transform pos;
+    public Transform pos;
     [SerializeField] private GameObject ball;
     [SerializeField] private List<GameObject> shape = new List<GameObject>();
     [SerializeField] private List<Cell> cellPositions = new List<Cell>();
@@ -84,7 +84,7 @@ public class BottomButtons : MonoBehaviour
         if (hit.collider != null)
         {
             // Обрабатываем взаимодействие с объектом
-
+            print(hit.collider.name);
             
         }
         else

@@ -10,6 +10,7 @@ public class MazeElement : MonoBehaviour
     public ElementType type;
     [SerializeField] GameObject moneyTextEffect;
     [SerializeField] public SpriteRenderer elementSprite;
+    public bool isScaling;
     public enum TriangleOrientation { BottomLeft, BottomRight, TopLeft, TopRight }
     public TriangleOrientation triangleOrientation;
     private void Awake()
